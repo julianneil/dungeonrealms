@@ -1,7 +1,9 @@
 {
-  "itemGroup.dungeonrealms": "Example Mod Tab",
-  "block.dungeonrealms.example_block": "Example Block",
-  "item.dungeonrealms.example_item": "Example Item",
+  "itemGroup.dungeonrealms": "Dungeon Realms",
+  "block.dungeonrealms.dungeon_portal_frame": "Dungeon Portal Frame",
+  "block.dungeonrealms.dungeon_portal": "Dungeon Portal",
+  "item.dungeonrealms.soul_shard": "Soul Shard",
+  "item.dungeonrealms.soul_pouch": "Soul Pouch",
 
   "dungeonrealms.configuration.title": "dungeonrealms Configs",
   "dungeonrealms.configuration.section.dungeonrealms.common.toml": "dungeonrealms Configs",
@@ -9,5 +11,8 @@
   "dungeonrealms.configuration.items": "Item List",
   "dungeonrealms.configuration.logDirtBlock": "Log Dirt Block",
   "dungeonrealms.configuration.magicNumberIntroduction": "Magic Number Text",
-  "dungeonrealms.configuration.magicNumber": "Magic Number"
+  "dungeonrealms.configuration.magicNumber": "Magic Number",
+  "dungeonrealms.configuration.overlayEnabled": "Enable Overlay",
+  "dungeonrealms.configuration.overlayX": "Overlay X",
+  "dungeonrealms.configuration.overlayY": "Overlay Y"
 }

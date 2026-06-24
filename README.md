@@ -55,3 +55,7 @@ On Windows:
 ## Roadmap
 
 The full project roadmap is documented in [idea.md](idea.md).
+
+## Coding rule
+
+When adding or changing systems, include concise comments on the main function and structural sections so file flow and intent are clear during maintenance.

@@ -2,12 +2,15 @@ package com.mcai.dungeonrealms;
 
 import org.slf4j.Logger;
 
+import com.mcai.dungeonrealms.item.SoulPouchItem;
 import com.mojang.logging.LogUtils;
+import com.mcai.dungeonrealms.portal.DungeonPortalActivationHandler;
+import com.mcai.dungeonrealms.portal.DungeonPortalBlock;
+import com.mcai.dungeonrealms.run.RunManager;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
@@ -15,7 +18,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
-import net.minecraft.world.level.material.MapColor;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -34,62 +36,61 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 // The value here should match an entry in the META-INF/neoforge.mods.toml file
 @Mod(dungeonrealms.MODID)
 public class dungeonrealms {
-    // Define mod id in a common place for everything to reference
+    // Core mod constants and registries.
     public static final String MODID = "dungeonrealms";
-    // Directly reference a slf4j logger
     public static final Logger LOGGER = LogUtils.getLogger();
-    // Create a Deferred Register to hold Blocks which will all be registered under the "dungeonrealms" namespace
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(MODID);
-    // Create a Deferred Register to hold Items which will all be registered under the "dungeonrealms" namespace
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MODID);
-    // Create a Deferred Register to hold CreativeModeTabs which will all be registered under the "dungeonrealms" namespace
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MODID);
 
-    // Creates a new Block with the id "dungeonrealms:example_block", combining the namespace and path
-    public static final DeferredBlock<Block> EXAMPLE_BLOCK = BLOCKS.registerSimpleBlock("example_block", BlockBehaviour.Properties.of().mapColor(MapColor.STONE));
-    // Creates a new BlockItem with the id "dungeonrealms:example_block", combining the namespace and path
-    public static final DeferredItem<BlockItem> EXAMPLE_BLOCK_ITEM = ITEMS.registerSimpleBlockItem("example_block", EXAMPLE_BLOCK);
+    // Portal content registrations.
+    public static final DeferredBlock<Block> DUNGEON_PORTAL_FRAME = BLOCKS.registerBlock(
+            "dungeon_portal_frame",
+            properties -> new Block(BlockBehaviour.Properties.ofFullCopy(Blocks.COBBLESTONE)));
+    public static final DeferredItem<BlockItem> DUNGEON_PORTAL_FRAME_ITEM = ITEMS.registerSimpleBlockItem("dungeon_portal_frame", DUNGEON_PORTAL_FRAME);
 
-    // Creates a new food item with the id "dungeonrealms:example_id", nutrition 1 and saturation 2
-    public static final DeferredItem<Item> EXAMPLE_ITEM = ITEMS.registerSimpleItem("example_item", new Item.Properties().food(new FoodProperties.Builder()
-            .alwaysEdible().nutrition(1).saturationModifier(2f).build()));
+    public static final DeferredBlock<DungeonPortalBlock> DUNGEON_PORTAL = BLOCKS.registerBlock(
+            "dungeon_portal",
+            properties -> new DungeonPortalBlock(BlockBehaviour.Properties.ofFullCopy(Blocks.NETHER_PORTAL).noLootTable()));
 
-    // Creates a creative tab with the id "dungeonrealms:example_tab" for the example item, that is placed after the combat tab
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> EXAMPLE_TAB = CREATIVE_MODE_TABS.register("example_tab", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.dungeonrealms")) //The language key for the title of your CreativeModeTab
+    // Core progression currency item.
+    public static final DeferredItem<Item> SOUL_SHARD = ITEMS.registerSimpleItem("soul_shard");
+    public static final DeferredItem<SoulPouchItem> SOUL_POUCH = ITEMS.registerItem("soul_pouch", SoulPouchItem::new, new Item.Properties().stacksTo(1));
+
+    // Creative tab for dungeon items/blocks during development.
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> DUNGEON_REALMS_TAB = CREATIVE_MODE_TABS.register("dungeonrealms_tab", () -> CreativeModeTab.builder()
+            .title(Component.translatable("itemGroup.dungeonrealms"))
             .withTabsBefore(CreativeModeTabs.COMBAT)
-            .icon(() -> EXAMPLE_ITEM.get().getDefaultInstance())
+            .icon(() -> DUNGEON_PORTAL_FRAME_ITEM.get().getDefaultInstance())
             .displayItems((parameters, output) -> {
-                output.accept(EXAMPLE_ITEM.get()); // Add the example item to the tab. For your own tabs, this method is preferred over the event
+                output.accept(DUNGEON_PORTAL_FRAME_ITEM.get());
+                output.accept(SOUL_SHARD.get());
+                output.accept(SOUL_POUCH.get());
             }).build());
 
-    // The constructor for the mod class is the first code that is run when your mod is loaded.
-    // FML will recognize some parameter types like IEventBus or ModContainer and pass them in automatically.
+    // Mod bootstrap: register content, systems, and config.
     public dungeonrealms(IEventBus modEventBus, ModContainer modContainer) {
-        // Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        // Register the Deferred Register to the mod event bus so blocks get registered
+        // Register content.
         BLOCKS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so items get registered
         ITEMS.register(modEventBus);
-        // Register the Deferred Register to the mod event bus so tabs get registered
         CREATIVE_MODE_TABS.register(modEventBus);
 
-        // Register ourselves for server and other game events we are interested in.
-        // Note that this is necessary if and only if we want *this* class (dungeonrealms) to respond directly to events.
-        // Do not add this line if there are no @SubscribeEvent-annotated functions in this class, like onServerStarting() below.
+        // Register runtime systems and event handlers.
         NeoForge.EVENT_BUS.register(this);
+        NeoForge.EVENT_BUS.register(RunManager.get());
+        NeoForge.EVENT_BUS.register(DungeonPortalActivationHandler.get());
 
-        // Register the item to a creative tab
+        // Add entries to vanilla tabs.
         modEventBus.addListener(this::addCreative);
 
-        // Register our mod's ModConfigSpec so that FML can create and load the config file for us
+        // Register mod config file.
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-        // Some common setup code
+        // Temporary bootstrap logs from the template config.
         LOGGER.info("HELLO FROM COMMON SETUP");
 
         if (Config.LOG_DIRT_BLOCK.getAsBoolean()) {
@@ -101,17 +102,22 @@ public class dungeonrealms {
         Config.ITEM_STRINGS.get().forEach((item) -> LOGGER.info("ITEM >> {}", item));
     }
 
-    // Add the example block item to the building blocks tab
+    // Keep frame block visible in vanilla building blocks for quick testing.
     private void addCreative(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey() == CreativeModeTabs.BUILDING_BLOCKS) {
-            event.accept(EXAMPLE_BLOCK_ITEM);
+            event.accept(DUNGEON_PORTAL_FRAME_ITEM);
+        }
+        if (event.getTabKey() == CreativeModeTabs.INGREDIENTS) {
+            event.accept(SOUL_SHARD);
+        }
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(SOUL_POUCH);
         }
     }
 
-    // You can use SubscribeEvent and let the Event Bus discover methods to call
+    // Server lifecycle hook; useful place for startup validation later.
     @SubscribeEvent
     public void onServerStarting(ServerStartingEvent event) {
-        // Do something when the server starts
         LOGGER.info("HELLO from server starting");
     }
 }

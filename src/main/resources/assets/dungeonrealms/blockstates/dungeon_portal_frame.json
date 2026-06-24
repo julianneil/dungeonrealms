@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "dungeonrealms:block/dungeon_portal_frame"
+    }
+  }
+}
