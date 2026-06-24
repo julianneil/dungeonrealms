@@ -1,25 +1,57 @@
+# Dungeon Realms
 
-Installation information
-=======
+Dungeon Realms is a NeoForge 1.21.1 Minecraft mod built around a roguelike dungeon dimension with separate run-based progression.
 
-This template repository can be directly cloned to get you started with a new
-mod. Simply create a new repository cloned from this one, by following the
-instructions provided by [GitHub](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template).
+Players enter a dungeon run without their overworld gear, clear rooms, collect temporary relics, defeat bosses, and return to the overworld with their original inventory restored. The project is designed for replayability, long-term progression, and compatibility with larger modpacks.
 
-Once you have your clone, simply open the repository in the IDE of your choice. The usual recommendation for an IDE is either IntelliJ IDEA or Eclipse.
+## Current focus
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-{this does not affect your code} and then start the process again.
+- Player inventory and state save/restore.
+- Dungeon run tracking.
+- Configurable progression and balance.
+- Room, enemy, boss, and relic systems.
 
-Mapping Names:
-============
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/NeoForged/NeoForm/blob/main/Mojang.md
+## Planned systems
 
-Additional Resources: 
-==========
-Community Documentation: https://docs.neoforged.net/  
-NeoForged Discord: https://discord.neoforged.net/
+- Dedicated dungeon dimension.
+- Random and branching room generation.
+- Temporary relics and dungeon-only gear.
+- Boss encounters with multi-phase mechanics.
+- Permanent progression through Soul Shards.
+- Physical overworld hub upgrades.
+- Endless mode and multiplayer support.
+
+## Development status
+
+This repository is in early development. The immediate priority is the technical foundation required for reliable dungeon runs:
+
+1. Mod bootstrap.
+2. Config system.
+3. Player inventory save/restore.
+
+Dungeon generation should not move forward until inventory restoration is stable.
+
+## Project stack
+
+- Minecraft 1.21.1
+- NeoForge 21.1+
+- Java 21
+- Git + GitHub
+
+## Building locally
+
+Use the Gradle wrapper from the project root:
+
+```bash
+./gradlew build
+```
+
+On Windows:
+
+```powershell
+.\gradlew.bat build
+```
+
+## Roadmap
+
+The full project roadmap is documented in [idea.md](idea.md).
